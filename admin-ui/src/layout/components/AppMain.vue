@@ -15,11 +15,12 @@
 
 <style lang="scss" scoped>
 .app-main {
-  min-height: calc(100vh - 84px);
+  min-height: calc(100vh - 50px);
   width: 100%;
   position: relative;
   overflow: hidden;
   padding: 20px;
+  padding-top: 70px; /* 50px navbar + 20px spacing */
   background-color: #f0f2f5;
 }
 

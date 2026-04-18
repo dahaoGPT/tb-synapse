@@ -7,7 +7,7 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import App from './App.vue'
 import { createPinia } from 'pinia'
 import router from './router'
-import { useUserStore } from './store/modules/user'
+import useUserStore from './store/modules/user'
 import './permission'
 import './styles/index.scss'
 

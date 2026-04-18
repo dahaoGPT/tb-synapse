@@ -42,6 +42,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
         http
+            // 启用CORS
+            .cors()
+            .and()
             // 禁用CSRF
             .csrf().disable()
             // 基于token，不需要session

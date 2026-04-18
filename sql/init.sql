@@ -4,8 +4,8 @@
 -- =============================================
 
 -- 创建数据库（如需手动创建可取消注释）
--- CREATE DATABASE admin_system ENCODING 'UTF8';
--- \c admin_system;
+-- CREATE DATABASE tb_synapse ENCODING 'UTF8';
+-- \c tb_synapse;
 
 -- ----------------------------
 -- 1. 用户表

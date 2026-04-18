@@ -90,11 +90,17 @@ const menuList = computed(() => {
 
 // 格式化动态路由为菜单格式
 function formatRoutes(routes) {
-  return routes.filter(item => !item.meta?.hidden).map(item => {
+  return routes.filter(item => {
+    const hidden = item.meta?.hidden || item.visible === 0
+    return !hidden
+  }).map(item => {
     const route = {
       path: item.path,
       name: item.name,
-      meta: item.meta || {},
+      meta: item.meta || {
+        title: item.menuName || '',
+        icon: item.icon || ''
+      },
       children: []
     }
     if (item.children && item.children.length) {

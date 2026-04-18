@@ -1,4 +1,4 @@
-import router from './index'
+import router from './router'
 import { getToken } from '@/utils/auth'
 import useUserStore from '@/store/modules/user'
 import usePermissionStore from '@/store/modules/permission'

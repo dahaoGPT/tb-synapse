@@ -83,10 +83,10 @@ tb-synapse/
 
 ```bash
 # 创建数据库
-createdb admin_system
+createdb tb_synapse
 
 # 执行初始化脚本
-psql -d admin_system -f sql/init.sql
+psql -d tb_synapse -f sql/init.sql
 ```
 
 ### 2. 启动后端

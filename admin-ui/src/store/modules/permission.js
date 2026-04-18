@@ -11,12 +11,22 @@ const viewModules = import.meta.glob('@/views/**/*.vue')
  * @param {Array} routes - 后端返回的路由数据
  * @returns {Array} Vue Router路由配置
  */
-function generateRoutesFromData(routes) {
+function generateRoutesFromData(routes, parentPath = '') {
   const accessedRoutes = []
 
   routes.forEach((route) => {
     const tmp = { ...route }
-    if (tmp.component) {
+
+    // 将后端扁平字段转换为 Vue Router 的 meta 格式
+    tmp.meta = {
+      title: tmp.menuName || tmp.meta?.title || '',
+      icon: tmp.icon || tmp.meta?.icon || '',
+      hidden: tmp.visible === 0,
+      noCache: tmp.isCache === 0
+    }
+
+    // 处理组件：目录类型(有children但无component)使用Layout
+    if (tmp.component && tmp.component !== '') {
       if (tmp.component === 'Layout') {
         tmp.component = Layout
       } else {
@@ -24,11 +34,19 @@ function generateRoutesFromData(routes) {
         const componentPath = resolveComponent(tmp.component)
         tmp.component = viewModules[componentPath] || (() => import('@/views/dashboard/index.vue'))
       }
+    } else if (tmp.children && tmp.children.length) {
+      // 目录类型：component为空但有子菜单，使用Layout
+      tmp.component = Layout
     }
 
-    // 递归处理子路由
+    // 递归处理子路由，并将绝对路径转换为相对路径
     if (tmp.children && tmp.children.length) {
-      tmp.children = generateRoutesFromData(tmp.children)
+      tmp.children = generateRoutesFromData(tmp.children, tmp.path)
+    }
+
+    // 将子路由的绝对路径转换为相对路径（Vue Router 4 嵌套路由需要相对路径）
+    if (parentPath && tmp.path && tmp.path.startsWith(parentPath + '/')) {
+      tmp.path = tmp.path.slice(parentPath.length + 1)
     }
 
     accessedRoutes.push(tmp)

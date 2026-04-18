@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/admin_system?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+    url: jdbc:postgresql://localhost:5432/tb_synapse?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
     username: postgres
     password: postgres
     driver-class-name: org.postgresql.Driver
