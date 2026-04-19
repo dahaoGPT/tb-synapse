@@ -13,8 +13,8 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="角色状态" clearable style="width: 120px">
-          <el-option label="正常" value="0" />
-          <el-option label="停用" value="1" />
+          <el-option label="正常" :value="1" />
+          <el-option label="停用" :value="0" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -33,12 +33,12 @@
     <!-- 数据表格 -->
     <el-table v-loading="loading" :data="roleList" border stripe>
       <el-table-column label="角色名称" prop="roleName" align="center" min-width="120" show-overflow-tooltip />
-      <el-table-column label="角色编码" prop="roleKey" align="center" min-width="120" show-overflow-tooltip />
-      <el-table-column label="排序" prop="sort" align="center" width="80" />
+      <el-table-column label="角色编码" prop="roleCode" align="center" min-width="120" show-overflow-tooltip />
+      <el-table-column label="排序" prop="sortOrder" align="center" width="80" />
       <el-table-column label="状态" align="center" width="100">
         <template #default="{ row }">
-          <el-tag :type="row.status === '0' ? 'success' : 'danger'">
-            {{ row.status === '0' ? '正常' : '停用' }}
+          <el-tag :type="row.status === 1 ? 'success' : 'danger'">
+            {{ row.status === 1 ? '正常' : '停用' }}
           </el-tag>
         </template>
       </el-table-column>
@@ -68,16 +68,16 @@
         <el-form-item label="角色名称" prop="roleName">
           <el-input v-model="form.roleName" placeholder="请输入角色名称" />
         </el-form-item>
-        <el-form-item label="角色编码" prop="roleKey">
-          <el-input v-model="form.roleKey" placeholder="请输入角色编码" :disabled="form.roleId !== undefined" />
+        <el-form-item label="角色编码" prop="roleCode">
+          <el-input v-model="form.roleCode" placeholder="请输入角色编码" :disabled="form.id !== undefined" />
         </el-form-item>
-        <el-form-item label="角色排序" prop="sort">
-          <el-input-number v-model="form.sort" :min="0" :max="999" controls-position="right" />
+        <el-form-item label="角色排序" prop="sortOrder">
+          <el-input-number v-model="form.sortOrder" :min="0" :max="999" controls-position="right" />
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
-            <el-radio value="0">正常</el-radio>
-            <el-radio value="1">停用</el-radio>
+            <el-radio :value="1">正常</el-radio>
+            <el-radio :value="0">停用</el-radio>
           </el-radio-group>
         </el-form-item>
         <el-form-item label="菜单权限" prop="menuIds">
@@ -111,7 +111,7 @@
           <el-input v-model="authMenuForm.roleName" disabled />
         </el-form-item>
         <el-form-item label="权限标识">
-          <el-input v-model="authMenuForm.roleKey" disabled />
+          <el-input v-model="authMenuForm.roleCode" disabled />
         </el-form-item>
         <el-form-item label="菜单权限">
           <el-checkbox v-model="menuExpand" @change="handleCheckedTreeExpand">展开/折叠</el-checkbox>
@@ -141,7 +141,7 @@
           <el-input v-model="dataScopeForm.roleName" disabled />
         </el-form-item>
         <el-form-item label="权限字符">
-          <el-input v-model="dataScopeForm.roleKey" disabled />
+          <el-input v-model="dataScopeForm.roleCode" disabled />
         </el-form-item>
         <el-form-item label="数据范围" prop="dataScope">
           <el-select v-model="dataScopeForm.dataScope" style="width: 100%">
@@ -217,11 +217,11 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref(null)
 const form = ref({
-  roleId: undefined,
+  id: undefined,
   roleName: '',
-  roleKey: '',
-  sort: 0,
-  status: '0',
+  roleCode: '',
+  sortOrder: 0,
+  status: 1,
   menuIds: [],
   remark: ''
 })
@@ -230,10 +230,10 @@ const rules = {
   roleName: [
     { required: true, message: '请输入角色名称', trigger: 'blur' }
   ],
-  roleKey: [
+  roleCode: [
     { required: true, message: '请输入角色编码', trigger: 'blur' }
   ],
-  sort: [
+  sortOrder: [
     { required: true, message: '请输入排序', trigger: 'blur' }
   ]
 }
@@ -243,7 +243,7 @@ const authMenuVisible = ref(false)
 const authMenuForm = reactive({
   roleId: undefined,
   roleName: '',
-  roleKey: '',
+  roleCode: '',
   menuIds: []
 })
 
@@ -253,7 +253,7 @@ const dataScopeFormRef = ref(null)
 const dataScopeForm = reactive({
   roleId: undefined,
   roleName: '',
-  roleKey: '',
+  roleCode: '',
   dataScope: '1',
   deptIds: []
 })
@@ -310,14 +310,14 @@ const handleAdd = () => {
 const handleEdit = async (row) => {
   resetForm()
   try {
-    const res = await getRole(row.roleId)
+    const res = await getRole(row.id)
     const data = res.data || res
     form.value = {
-      roleId: data.roleId,
+      id: data.id,
       roleName: data.roleName,
-      roleKey: data.roleKey,
-      sort: data.sort,
-      status: data.status || '0',
+      roleCode: data.roleCode,
+      sortOrder: data.sortOrder,
+      status: data.status,
       menuIds: data.menuIds || [],
       remark: data.remark
     }
@@ -341,7 +341,7 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await delRole(row.roleId)
+      await delRole(row.id)
       ElMessage.success('删除成功')
       getList()
     } catch (error) {
@@ -357,7 +357,7 @@ const submitForm = () => {
       try {
         const menuIds = menuTreeRef.value ? menuTreeRef.value.getCheckedKeys(true) : []
         const submitData = { ...form.value, menuIds: menuIds }
-        if (form.value.roleId) {
+        if (form.value.id) {
           await updateRole(submitData)
           ElMessage.success('修改成功')
         } else {
@@ -376,11 +376,11 @@ const submitForm = () => {
 // 重置表单
 const resetForm = () => {
   form.value = {
-    roleId: undefined,
+    id: undefined,
     roleName: '',
-    roleKey: '',
-    sort: 0,
-    status: '0',
+    roleCode: '',
+    sortOrder: 0,
+    status: 1,
     menuIds: [],
     remark: ''
   }
@@ -391,12 +391,12 @@ const resetForm = () => {
 
 // 分配菜单权限
 const handleAuthMenu = async (row) => {
-  authMenuForm.roleId = row.roleId
+  authMenuForm.roleId = row.id
   authMenuForm.roleName = row.roleName
-  authMenuForm.roleKey = row.roleKey
+  authMenuForm.roleCode = row.roleCode
   authMenuVisible.value = true
   try {
-    const res = await getRoleMenuTree(row.roleId)
+    const res = await getRoleMenuTree(row.id)
     const data = res.data || res
     menuOptions.value = data.menus || data || []
     nextTick(() => {
@@ -423,14 +423,14 @@ const submitAuthMenu = () => {
 
 // 分配数据权限
 const handleAuthDataScope = async (row) => {
-  dataScopeForm.roleId = row.roleId
+  dataScopeForm.roleId = row.id
   dataScopeForm.roleName = row.roleName
-  dataScopeForm.roleKey = row.roleKey
+  dataScopeForm.roleCode = row.roleCode
   dataScopeForm.dataScope = '1'
   dataScopeForm.deptIds = []
   dataScopeVisible.value = true
   try {
-    const res = await getRoleDeptTree(row.roleId)
+    const res = await getRoleDeptTree(row.id)
     const data = res.data || res
     deptOptions.value = data.depts || data || []
     dataScopeForm.dataScope = data.dataScope || '1'

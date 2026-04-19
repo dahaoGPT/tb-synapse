@@ -13,8 +13,8 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="菜单状态" clearable style="width: 120px">
-          <el-option label="正常" value="0" />
-          <el-option label="停用" value="1" />
+          <el-option label="正常" :value="1" />
+          <el-option label="停用" :value="0" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -37,7 +37,7 @@
     <el-table
       v-loading="loading"
       :data="menuList"
-      row-key="menuId"
+      row-key="id"
       :default-expand-all="isExpandAll"
       :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
       border
@@ -59,7 +59,7 @@
           <span v-else>-</span>
         </template>
       </el-table-column>
-      <el-table-column label="排序" prop="sort" align="center" width="80" />
+      <el-table-column label="排序" prop="sortOrder" align="center" width="80" />
       <el-table-column label="权限标识" prop="perms" align="center" min-width="150" show-overflow-tooltip>
         <template #default="{ row }">
           <span v-if="row.perms">{{ row.perms }}</span>
@@ -75,8 +75,8 @@
       </el-table-column>
       <el-table-column label="状态" align="center" width="80">
         <template #default="{ row }">
-          <el-tag :type="row.status === '0' ? 'success' : 'danger'">
-            {{ row.status === '0' ? '正常' : '停用' }}
+          <el-tag :type="row.status === 1 ? 'success' : 'danger'">
+            {{ row.status === 1 ? '正常' : '停用' }}
           </el-tag>
         </template>
       </el-table-column>
@@ -130,8 +130,8 @@
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="排序" prop="sort">
-              <el-input-number v-model="form.sort" :min="0" :max="999" controls-position="right" />
+            <el-form-item label="排序" prop="sortOrder">
+              <el-input-number v-model="form.sortOrder" :min="0" :max="999" controls-position="right" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -158,16 +158,16 @@
           <el-col :span="12">
             <el-form-item label="是否外链" prop="isFrame">
               <el-radio-group v-model="form.isFrame">
-                <el-radio value="0">是</el-radio>
-                <el-radio value="1">否</el-radio>
+                <el-radio :value="0">是</el-radio>
+                <el-radio :value="1">否</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="是否缓存" prop="isCache">
               <el-radio-group v-model="form.isCache">
-                <el-radio value="0">缓存</el-radio>
-                <el-radio value="1">不缓存</el-radio>
+                <el-radio :value="1">缓存</el-radio>
+                <el-radio :value="0">不缓存</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -176,16 +176,16 @@
           <el-col :span="12">
             <el-form-item label="显示状态" prop="visible">
               <el-radio-group v-model="form.visible">
-                <el-radio value="0">显示</el-radio>
-                <el-radio value="1">隐藏</el-radio>
+                <el-radio :value="1">显示</el-radio>
+                <el-radio :value="0">隐藏</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="菜单状态" prop="status">
               <el-radio-group v-model="form.status">
-                <el-radio value="0">正常</el-radio>
-                <el-radio value="1">停用</el-radio>
+                <el-radio :value="1">正常</el-radio>
+                <el-radio :value="0">停用</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -239,19 +239,19 @@ const form = ref(getDefaultForm())
 
 function getDefaultForm() {
   return {
-    menuId: undefined,
+    id: undefined,
     parentId: 0,
     menuName: '',
     menuType: 'M',
     icon: '',
-    sort: 0,
+    sortOrder: 0,
     path: '',
     component: '',
     perms: '',
-    isFrame: '1',
-    isCache: '0',
-    visible: '0',
-    status: '0'
+    isFrame: 1,
+    isCache: 1,
+    visible: 1,
+    status: 1
   }
 }
 
@@ -259,7 +259,7 @@ const rules = {
   menuName: [
     { required: true, message: '请输入菜单名称', trigger: 'blur' }
   ],
-  sort: [
+  sortOrder: [
     { required: true, message: '请输入排序', trigger: 'blur' }
   ],
   path: [
@@ -286,16 +286,20 @@ const getList = async () => {
 
 // 构建树形结构
 function buildTree(data) {
+  // If backend already returns tree structure, use it directly
+  if (data.length > 0 && data[0].children) {
+    return data
+  }
   const map = {}
   const tree = []
   data.forEach(item => {
-    map[item.menuId] = { ...item, children: [] }
+    map[item.id] = { ...item, children: [] }
   })
   data.forEach(item => {
     if (item.parentId === 0) {
-      tree.push(map[item.menuId])
+      tree.push(map[item.id])
     } else if (map[item.parentId]) {
-      map[item.parentId].children.push(map[item.menuId])
+      map[item.parentId].children.push(map[item.id])
     }
   })
   return tree
@@ -328,8 +332,8 @@ const toggleExpandAll = () => {
 // 新增
 const handleAdd = (row) => {
   resetForm()
-  if (row && row.menuId) {
-    form.value.parentId = row.menuId
+  if (row && row.id) {
+    form.value.parentId = row.id
   }
   dialogTitle.value = '新增菜单'
   dialogVisible.value = true
@@ -339,22 +343,22 @@ const handleAdd = (row) => {
 const handleEdit = async (row) => {
   resetForm()
   try {
-    const res = await getMenu(row.menuId)
+    const res = await getMenu(row.id)
     const data = res.data || res
     form.value = {
-      menuId: data.menuId,
+      id: data.id,
       parentId: data.parentId,
       menuName: data.menuName,
       menuType: data.menuType,
       icon: data.icon,
-      sort: data.sort,
+      sortOrder: data.sortOrder,
       path: data.path,
       component: data.component,
       perms: data.perms,
-      isFrame: data.isFrame || '1',
-      isCache: data.isCache || '0',
-      visible: data.visible || '0',
-      status: data.status || '0'
+      isFrame: data.isFrame,
+      isCache: data.isCache,
+      visible: data.visible,
+      status: data.status
     }
     dialogTitle.value = '编辑菜单'
     dialogVisible.value = true
@@ -371,7 +375,7 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await delMenu(row.menuId)
+      await delMenu(row.id)
       ElMessage.success('删除成功')
       getList()
     } catch (error) {
@@ -385,7 +389,7 @@ const submitForm = () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        if (form.value.menuId) {
+        if (form.value.id) {
           await updateMenu(form.value)
           ElMessage.success('修改成功')
         } else {

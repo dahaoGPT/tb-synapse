@@ -90,7 +90,7 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="用户名" prop="username">
-              <el-input v-model="form.username" placeholder="请输入用户名" :disabled="form.userId !== undefined" />
+              <el-input v-model="form.username" placeholder="请输入用户名" :disabled="form.id !== undefined" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -99,7 +99,7 @@
             </el-form-item>
           </el-col>
         </el-row>
-        <el-row :gutter="20" v-if="form.userId === undefined">
+        <el-row :gutter="20" v-if="form.id === undefined">
           <el-col :span="12">
             <el-form-item label="密码" prop="password">
               <el-input v-model="form.password" type="password" placeholder="请输入密码" show-password />
@@ -240,7 +240,7 @@ const dialogVisible = ref(false)
 const dialogTitle = ref('')
 const formRef = ref(null)
 const form = ref({
-  userId: undefined,
+  id: undefined,
   username: '',
   nickname: '',
   password: '',
@@ -349,12 +349,12 @@ const handleAdd = () => {
 // 编辑
 const handleEdit = async (row) => {
   resetForm()
-  const userId = row.userId
+  const userId = row.id
   try {
     const res = await getUser(userId)
     const data = res.data || res
     form.value = {
-      userId: data.userId,
+      id: data.id,
       username: data.username,
       nickname: data.nickname,
       password: '',
@@ -382,7 +382,7 @@ const handleDelete = (row) => {
     type: 'warning'
   }).then(async () => {
     try {
-      await delUser(row.userId)
+      await delUser(row.id)
       ElMessage.success('删除成功')
       getList()
     } catch (error) {
@@ -397,7 +397,7 @@ const handleBatchDelete = () => {
     ElMessage.warning('请选择要删除的用户')
     return
   }
-  const ids = selectedRows.value.map(item => item.userId).join(',')
+  const ids = selectedRows.value.map(item => item.id).join(',')
   ElMessageBox.confirm(`确认要删除选中的${selectedRows.value.length}个用户吗？`, '系统提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -422,7 +422,7 @@ const handleStatusChange = async (row) => {
       cancelButtonText: '取消',
       type: 'warning'
     }).then(async () => {
-      await updateUser({ userId: row.userId, status: row.status })
+      await updateUser({ id: row.id, status: row.status })
       ElMessage.success(`${text}成功`)
     }).catch(() => {
       row.status = row.status === 1 ? 0 : 1
@@ -434,7 +434,7 @@ const handleStatusChange = async (row) => {
 
 // 重置密码
 const handleResetPwd = (row) => {
-  resetPwdForm.userId = row.userId
+  resetPwdForm.userId = row.id
   resetPwdForm.username = row.username
   resetPwdForm.password = ''
   resetPwdForm.confirmPassword = ''
@@ -460,7 +460,7 @@ const submitForm = () => {
   formRef.value.validate(async (valid) => {
     if (valid) {
       try {
-        if (form.value.userId) {
+        if (form.value.id) {
           await updateUser(form.value)
           ElMessage.success('修改成功')
         } else {
@@ -479,7 +479,7 @@ const submitForm = () => {
 // 重置表单
 const resetForm = () => {
   form.value = {
-    userId: undefined,
+    id: undefined,
     username: '',
     nickname: '',
     password: '',
