@@ -67,7 +67,7 @@ const loginRules = {
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 5, max: 20, message: '密码长度在5到20个字符', trigger: 'blur' }
+    { min: 4, max: 20, message: '密码长度在4到20个字符', trigger: 'blur' }
   ]
 }
 

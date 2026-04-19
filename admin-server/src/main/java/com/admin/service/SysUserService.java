@@ -3,8 +3,6 @@ package com.admin.service;
 import com.admin.entity.SysUser;
 import com.baomidou.mybatisplus.extension.service.IService;
 
-import java.util.List;
-
 /**
  * 用户Service接口
  */
@@ -18,7 +16,8 @@ public interface SysUserService extends IService<SysUser> {
     /**
      * 分页查询用户列表
      */
-    com.baomidou.mybatisplus.core.metadata.IPage<SysUser> selectUserPage(int pageNum, int pageSize, String username, String phone, Integer status);
+    com.baomidou.mybatisplus.core.metadata.IPage<SysUser> selectUserPage(int pageNum, int pageSize, String username,
+            String phone, Integer status);
 
     /**
      * 查询用户信息（含角色和权限）

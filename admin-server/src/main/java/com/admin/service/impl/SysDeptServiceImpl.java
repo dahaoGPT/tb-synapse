@@ -6,6 +6,7 @@ import com.admin.service.SysDeptService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
  * 部门Service实现
  */
 @Service
+@Slf4j
 public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> implements SysDeptService {
 
     @Resource
@@ -23,6 +25,7 @@ public class SysDeptServiceImpl extends ServiceImpl<SysDeptMapper, SysDept> impl
 
     @Override
     public List<SysDept> selectDeptList() {
+        log.info("查询部门列表，用于交易跟踪");
         LambdaQueryWrapper<SysDept> wrapper = new LambdaQueryWrapper<>();
         wrapper.orderByAsc(SysDept::getParentId).orderByAsc(SysDept::getSortOrder);
         return sysDeptMapper.selectList(wrapper);

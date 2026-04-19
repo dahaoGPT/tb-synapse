@@ -22,3 +22,12 @@ mybatis-plus:
 jwt:
   secret: adminSystemJwtSecretKey2024ForSpringBootApplication
   expiration: 86400000
+  
+logging:
+  level:
+    root: info
+    com.admin: debug # 设置自己项目的包为 debug 级别
+  file:
+    name: logs/tb-synapse.log # 设置把日志输出到文件中
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

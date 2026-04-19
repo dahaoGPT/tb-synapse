@@ -22,8 +22,8 @@
       </el-form-item>
       <el-form-item label="状态" prop="status">
         <el-select v-model="queryParams.status" placeholder="用户状态" clearable style="width: 120px">
-          <el-option label="正常" value="0" />
-          <el-option label="停用" value="1" />
+          <el-option label="启用" value="1" />
+          <el-option label="未启用" value="0" />
         </el-select>
       </el-form-item>
       <el-form-item>
@@ -59,8 +59,8 @@
         <template #default="{ row }">
           <el-switch
             v-model="row.status"
-            active-value="0"
-            inactive-value="1"
+            :active-value="1"
+            :inactive-value="0"
             @change="handleStatusChange(row)"
           />
         </template>
@@ -122,17 +122,17 @@
           <el-col :span="12">
             <el-form-item label="性别" prop="sex">
               <el-select v-model="form.sex" placeholder="请选择性别">
-                <el-option label="男" value="0" />
-                <el-option label="女" value="1" />
-                <el-option label="未知" value="2" />
+                <el-option label="男" :value="0" />
+                <el-option label="女" :value="1" />
+                <el-option label="未知" :value="2" />
               </el-select>
             </el-form-item>
           </el-col>
           <el-col :span="12">
             <el-form-item label="状态" prop="status">
               <el-radio-group v-model="form.status">
-                <el-radio value="0">正常</el-radio>
-                <el-radio value="1">停用</el-radio>
+                <el-radio :value="1">启用</el-radio>
+                <el-radio :value="0">未启用</el-radio>
               </el-radio-group>
             </el-form-item>
           </el-col>
@@ -246,8 +246,8 @@ const form = ref({
   password: '',
   phone: '',
   email: '',
-  sex: '0',
-  status: '0',
+  sex: 0,
+  status: 1,
   deptId: undefined,
   postIds: [],
   roleIds: [],
@@ -264,7 +264,7 @@ const rules = {
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 5, max: 20, message: '密码长度在5到20个字符', trigger: 'blur' }
+    { min: 4, max: 20, message: '密码长度在4到20个字符', trigger: 'blur' }
   ],
   phone: [
     { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
@@ -287,7 +287,7 @@ const resetPwdForm = reactive({
 const resetPwdRules = {
   password: [
     { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 5, max: 20, message: '密码长度在5到20个字符', trigger: 'blur' }
+    { min: 4, max: 20, message: '密码长度在4到20个字符', trigger: 'blur' }
   ],
   confirmPassword: [
     { required: true, message: '请确认密码', trigger: 'blur' },
@@ -360,8 +360,8 @@ const handleEdit = async (row) => {
       password: '',
       phone: data.phone,
       email: data.email,
-      sex: data.sex || '0',
-      status: data.status || '0',
+      sex: data.sex !== undefined ? data.sex : 0,
+      status: data.status !== undefined ? data.status : 1,
       deptId: data.deptId,
       postIds: data.postIds || [],
       roleIds: data.roleIds || [],
@@ -415,7 +415,7 @@ const handleBatchDelete = () => {
 
 // 状态修改
 const handleStatusChange = async (row) => {
-  const text = row.status === '0' ? '启用' : '停用'
+  const text = row.status === 1 ? '启用' : '停用'
   try {
     ElMessageBox.confirm(`确认要${text}用户"${row.username}"吗？`, '系统提示', {
       confirmButtonText: '确定',
@@ -425,10 +425,10 @@ const handleStatusChange = async (row) => {
       await updateUser({ userId: row.userId, status: row.status })
       ElMessage.success(`${text}成功`)
     }).catch(() => {
-      row.status = row.status === '0' ? '1' : '0'
+      row.status = row.status === 1 ? 0 : 1
     })
   } catch (error) {
-    row.status = row.status === '0' ? '1' : '0'
+    row.status = row.status === 1 ? 0 : 1
   }
 }
 
@@ -485,8 +485,8 @@ const resetForm = () => {
     password: '',
     phone: '',
     email: '',
-    sex: '0',
-    status: '0',
+    sex: 0,
+    status: 1,
     deptId: undefined,
     postIds: [],
     roleIds: [],
