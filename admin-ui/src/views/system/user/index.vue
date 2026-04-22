@@ -144,6 +144,7 @@
                 v-model="form.deptId"
                 :options="deptOptions"
                 placeholder="请选择部门"
+                label-key="deptName"
               />
             </el-form-item>
           </el-col>
