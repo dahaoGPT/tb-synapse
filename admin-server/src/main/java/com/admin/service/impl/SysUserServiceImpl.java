@@ -15,12 +15,20 @@ import lombok.extern.slf4j.Slf4j;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import com.admin.entity.SysUserRole;
+import com.admin.mapper.SysUserRoleMapper;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 
 /**
  * 用户Service实现
@@ -31,6 +39,9 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
 
     @Resource
     private SysUserMapper sysUserMapper;
+
+    @Resource
+    private SysUserRoleMapper sysUserRoleMapper;
 
     @Resource
     private PasswordEncoder passwordEncoder;
@@ -83,5 +94,52 @@ public class SysUserServiceImpl extends ServiceImpl<SysUserMapper, SysUser> impl
         user.setId(userId);
         user.setStatus(status);
         sysUserMapper.updateById(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean save(SysUser user) {
+        boolean result = super.save(user);
+        if (result && user.getRoleIds() != null && user.getRoleIds().length > 0) {
+            insertUserRoles(user.getId(), user.getRoleIds());
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean updateById(SysUser user) {
+        boolean result = super.updateById(user);
+        if (result && user.getRoleIds() != null) {
+            // 先删除旧的角色关联
+            sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, user.getId()));
+            // 如果有新角色，则插入
+            if (user.getRoleIds().length > 0) {
+                insertUserRoles(user.getId(), user.getRoleIds());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean removeByIds(Collection<?> idList) {
+        if (idList != null && !idList.isEmpty()) {
+            sysUserRoleMapper.delete(new LambdaQueryWrapper<SysUserRole>().in(SysUserRole::getUserId, idList));
+        }
+        return super.removeByIds(idList);
+    }
+
+    private void insertUserRoles(Long userId, Long[] roleIds) {
+        if (roleIds != null && roleIds.length > 0) {
+            for (Long roleId : roleIds) {
+                if (roleId != null) {
+                    SysUserRole userRole = new SysUserRole();
+                    userRole.setUserId(userId);
+                    userRole.setRoleId(roleId);
+                    sysUserRoleMapper.insert(userRole);
+                }
+            }
+        }
     }
 }

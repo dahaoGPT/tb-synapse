@@ -24,7 +24,7 @@ router.beforeEach(async (to, from, next) => {
     } else {
       // 已登录，检查是否已获取用户信息
       const userStore = useUserStore()
-      if (userStore.roles && userStore.roles.length > 0) {
+      if ((userStore.roles && userStore.roles.length > 0) || userStore.userInfo?.id) {
         next()
       } else {
         try {

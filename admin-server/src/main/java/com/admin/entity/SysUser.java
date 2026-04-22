@@ -87,4 +87,8 @@ public class SysUser implements Serializable {
     /** 权限标识列表 */
     @TableField(exist = false)
     private java.util.Set<String> permissions;
+
+    /** 角色ID列表 */
+    @TableField(exist = false)
+    private Long[] roleIds;
 }

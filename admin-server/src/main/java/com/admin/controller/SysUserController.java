@@ -5,7 +5,9 @@ import com.admin.common.PageResult;
 import com.admin.common.Result;
 import com.admin.entity.SysUser;
 import com.admin.entity.SysUserRole;
+import com.admin.entity.SysDept;
 import com.admin.mapper.SysUserRoleMapper;
+import com.admin.mapper.SysDeptMapper;
 import com.admin.service.SysUserService;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -17,8 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -35,6 +36,9 @@ public class SysUserController {
     private SysUserRoleMapper sysUserRoleMapper;
 
     @Resource
+    private SysDeptMapper sysDeptMapper;
+
+    @Resource
     private PasswordEncoder passwordEncoder;
 
     /**
@@ -49,8 +53,25 @@ public class SysUserController {
             @RequestParam(required = false) String phone,
             @RequestParam(required = false) Integer status) {
         IPage<SysUser> page = sysUserService.selectUserPage(pageNum, pageSize, username, phone, status);
-        // 清除密码
-        page.getRecords().forEach(u -> u.setPassword(null));
+        // 清除密码并填充部门名称
+        List<SysUser> records = page.getRecords();
+        // 收集所有非空的deptId
+        Set<Long> deptIds = records.stream()
+                .map(SysUser::getDeptId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        // 批量查询部门
+        Map<Long, String> deptNameMap = new HashMap<>();
+        if (!deptIds.isEmpty()) {
+            List<SysDept> depts = sysDeptMapper.selectBatchIds(deptIds);
+            depts.forEach(d -> deptNameMap.put(d.getId(), d.getDeptName()));
+        }
+        records.forEach(u -> {
+            u.setPassword(null);
+            if (u.getDeptId() != null) {
+                u.setDeptName(deptNameMap.getOrDefault(u.getDeptId(), ""));
+            }
+        });
         return Result.success(PageResult.of(page));
     }
 
@@ -68,8 +89,8 @@ public class SysUserController {
         // 查询角色ID列表
         List<SysUserRole> userRoles = sysUserRoleMapper.selectList(
                 new LambdaQueryWrapper<SysUserRole>().eq(SysUserRole::getUserId, id));
-        List<Long> roleIds = userRoles.stream().map(SysUserRole::getRoleId).collect(Collectors.toList());
-        user.setRoles(null); // 不返回完整角色对象，前端通过roleIds处理
+        Long[] roleIds = userRoles.stream().map(SysUserRole::getRoleId).toArray(Long[]::new);
+        user.setRoleIds(roleIds);
         return Result.success(user);
     }
 
