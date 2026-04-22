@@ -50,6 +50,8 @@ public class SysRoleController {
         if (role == null) {
             throw new BusinessException("角色不存在");
         }
+        List<Long> menuIds = sysRoleService.selectMenuIdsByRoleId(id);
+        role.setMenuIds(menuIds);
         return Result.success(role);
     }
 
@@ -60,6 +62,7 @@ public class SysRoleController {
     @PostMapping
     public Result<Void> add(@RequestBody SysRole role) {
         sysRoleService.save(role);
+        sysRoleService.assignMenus(role.getId(), role.getMenuIds());
         return Result.success();
     }
 
@@ -70,6 +73,7 @@ public class SysRoleController {
     @PutMapping
     public Result<Void> edit(@RequestBody SysRole role) {
         sysRoleService.updateById(role);
+        sysRoleService.assignMenus(role.getId(), role.getMenuIds());
         return Result.success();
     }
 

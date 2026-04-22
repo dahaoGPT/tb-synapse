@@ -90,7 +90,7 @@
             node-key="id"
             :check-strictly="false"
             empty-text="加载中..."
-            :props="{ label: 'label', children: 'children' }"
+            :props="{ label: 'menuName', children: 'children' }"
             class="menu-tree"
           />
         </el-form-item>
@@ -123,7 +123,7 @@
             node-key="id"
             :check-strictly="false"
             empty-text="加载中..."
-            :props="{ label: 'label', children: 'children' }"
+            :props="{ label: 'menuName', children: 'children' }"
             class="menu-tree"
           />
         </el-form-item>
@@ -162,7 +162,7 @@
             node-key="id"
             :check-strictly="false"
             empty-text="加载中..."
-            :props="{ label: 'label', children: 'children' }"
+            :props="{ label: 'deptName', children: 'children' }"
             class="menu-tree"
           />
         </el-form-item>
@@ -396,16 +396,18 @@ const handleAuthMenu = async (row) => {
   authMenuForm.roleCode = row.roleCode
   authMenuVisible.value = true
   try {
+    // 先加载菜单树数据
+    await getMenuTreeData()
+    // 再获取该角色已勾选的菜单ID
     const res = await getRoleMenuTree(row.id)
-    const data = res.data || res
-    menuOptions.value = data.menus || data || []
+    const checkedKeys = res.data || res || []
     nextTick(() => {
-      if (authMenuTreeRef.value && data.checkedKeys) {
-        authMenuTreeRef.value.setCheckedKeys(data.checkedKeys)
+      if (authMenuTreeRef.value && checkedKeys.length) {
+        authMenuTreeRef.value.setCheckedKeys(checkedKeys)
       }
     })
   } catch (error) {
-    menuOptions.value = []
+    console.error('加载菜单权限失败', error)
   }
 }
 
@@ -414,7 +416,7 @@ const submitAuthMenu = () => {
   const menuIds = authMenuTreeRef.value ? authMenuTreeRef.value.getCheckedKeys(true) : []
   updateRoleMenu({
     roleId: authMenuForm.roleId,
-    menuIds: menuIds.join(',')
+    menuIds: menuIds
   }).then(() => {
     ElMessage.success('分配菜单权限成功')
     authMenuVisible.value = false
@@ -571,8 +573,10 @@ onMounted(() => {
 .menu-tree {
   border: 1px solid #dcdfe6;
   border-radius: 4px;
-  max-height: 250px;
+  min-height: 200px;
+  max-height: 400px;
   overflow-y: auto;
-  padding: 5px;
+  padding: 10px;
+  width: 100%;
 }
 </style>
